@@ -2,25 +2,43 @@ Peer Assessment 1
 ========================================================
 
 ## Set working directory
-```{r}
+
+```r
 setwd("/Users/GaryLo/Desktop/Data Science Specialization/Reproducible Research/Peer Assessment 1")
 ```
 
 ## Loading necessary packages
-```{r}
+
+```r
 install.packages("knitr")
+```
+
+```
+## Error: trying to use CRAN without setting a mirror
+```
+
+```r
 library(knitr)
 install.packages("ggplot2")
+```
+
+```
+## Error: trying to use CRAN without setting a mirror
+```
+
+```r
 library(ggplot2)
 ```
 
 ## Set Global Options
-```{r setoptions}
+
+```r
 opts_chunk$set(echo = TRUE)
 ```
 
 ## Downloading/Unzipping Data and checking if file exists.
-```{r}
+
+```r
 url = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 if (file.exists("repdata-data-activity.zip")){
     #skip download step
@@ -35,12 +53,14 @@ if (file.exists("activity.csv")){
 ```
 
 ## Reading in data.
-```{r}
+
+```r
 data = read.csv("activity.csv")
 ```
 
 ## Formating date variable to Date type and interval variable to contigous mins.
-```{r}
+
+```r
 data$date = as.Date(data$date, format = "%Y-%m-%d")
 data$interval_hours = as.integer(data$interval/100)
 data$interval_mins = data$interval - data$interval_hours*100
@@ -48,7 +68,8 @@ data$cont_mins = data$interval_hours*60 + data$interval_mins
 ```
 
 ## What's the Total/Mean/Median number of steps per day (ignoring NA values)?
-```{r}
+
+```r
 measureDF = data.frame(matrix(nrow=length(unique(data$date)),ncol=4))
 names(measureDF) = c("Date","TotalSteps","Mean","Median")
 measureDF$Date = unique(data$date)
@@ -70,15 +91,19 @@ for (i in 1:nrow(measureDF)){
 overallMean = mean(measureDF$TotalSteps)
 overallMed = median(measureDF$TotalSteps)
 ```
-**The overall mean is `r overallMean` and the overall median is `r overallMed`.**  
+**The overall mean is 9354.2295 and the overall median is 1.0395 &times; 10<sup>4</sup>.**  
 
 ## Histogram of Total Steps per day
-```{r, fig.height=4}
+
+```r
 barplot(measureDF$TotalSteps,main="Histogram of Total Steps per Date",ylab = "Total Steps", xlab = "Date", names.arg=measureDF$Date)
 ```
 
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7.png) 
+
 ## What is the daily average activity pattern?
-```{r}
+
+```r
 uniqueIntervals = unique(data$cont_mins)
 activityDF = data.frame(matrix(nrow=length(uniqueIntervals), ncol = 3))
 names(activityDF) = c("Intervals","TotalSteps","MeanSteps")
@@ -95,18 +120,25 @@ for (i in 1:nrow(activityDF)){
     }
 }
 with(activityDF,plot(Intervals,MeanSteps,type="l",main="Plot of Interval against Mean Steps"))
+```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
+
+```r
 highAvg = activityDF[activityDF$MeanSteps == max(activityDF$MeanSteps),]$Intervals
 ```
-**The 5-minute interval with the highest average number of steps is: `r highAvg`** 
+**The 5-minute interval with the highest average number of steps is: 515** 
 
 ## Total number of rows in dataset with NA's.
-```{r}
+
+```r
 numNA = nrow(data)-sum(complete.cases(data))
 ```
-**Total number of rows in dataset with NA's: `r numNA`.**  
+**Total number of rows in dataset with NA's: 2304.**  
 
 ## Imputing missing values by using mean number of steps on that interval.
-```{r}
+
+```r
 fullData = data
 for (i in 1:nrow(fullData)){
     if (is.na(fullData$steps[i])){
@@ -118,10 +150,11 @@ for (i in 1:nrow(fullData)){
 }
 newNumNA = nrow(fullData)-sum(complete.cases(fullData))
 ```
-**The new number of NA's in the imputed dataset is `r newNumNA`.**  
+**The new number of NA's in the imputed dataset is 0.**  
 
 ## Histogram of Total Steps per day with fullData set (with imputed values)
-```{r, fig.height=4}
+
+```r
 fullDF = data.frame(matrix(nrow=length(unique(fullData$date)),ncol=4))
 names(fullDF) = c("Date","TotalSteps","Mean","Median")
 fullDF$Date = unique(fullData$date)
@@ -143,15 +176,19 @@ for (i in 1:nrow(fullDF)){
 barplot(fullDF$TotalSteps,main="Histogram of Total Steps per Date with Imputed Values",ylab = "Total Steps", xlab = "Date", names.arg=fullDF$Date)
 ```
 
-```{r}
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11.png) 
+
+
+```r
 newOverallMean = mean(fullDF$TotalSteps)
 newOverallMed = median(fullDF$TotalSteps)
 ```
-**The imputed overall mean is `r newOverallMean` and the imputed overall median is `r newOverallMed`.**  
+**The imputed overall mean is 1.0766 &times; 10<sup>4</sup> and the imputed overall median is 1.0766 &times; 10<sup>4</sup>.**  
 **Both the new imputed means and medians are higher than the non-imputed values.**  
 
 ## Are there differences between weekends and weekdays?  Creating new factor variable
-```{r}
+
+```r
 for (i in 1:nrow(fullData)){
     if (weekdays(fullData$date[i])=="Saturday" | weekdays(fullData$date[i])=="Sunday"){
         fullData$weekday[i] = "Weekend"
@@ -162,7 +199,8 @@ for (i in 1:nrow(fullData)){
 fullData$weekday = as.factor(fullData$weekday)
 ```
 
-```{r}
+
+```r
 fullActivityDF = data.frame(matrix(nrow=length(uniqueIntervals), ncol = 3))
 names(fullActivityDF) = c("Intervals","TotalSteps","MeanSteps")
 fullActivityDF$Intervals = uniqueIntervals
@@ -197,9 +235,12 @@ fullActivityWeekendDF$Weekday = "Weekend"
 ```
 
 ## Panel plot comparing weekdays and weekends.
-```{r}
+
+```r
 fullActivityAllDaysDF = rbind(fullActivityWeekdayDF,fullActivityWeekendDF)
 g = ggplot(fullActivityAllDaysDF,aes(Intervals,MeanSteps))
 g + geom_line() + facet_grid(Weekday~.) + labs(x="5 min Interval", y = "Number of Steps", title = "Mean number of Steps against Interval by Weekday/Weekend")
 ```
+
+![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15.png) 
 
